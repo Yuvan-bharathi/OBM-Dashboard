@@ -1,0 +1,12 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow read access to the 'messages' collection for everyone.
+    // This is for development purposes only.
+    // In a production app, you should restrict access to authenticated users.
+    match /messages/{messageId} {
+      allow read: if true;
+      allow write: if false; // Keep writes restricted for now
+    }
+  }
+}

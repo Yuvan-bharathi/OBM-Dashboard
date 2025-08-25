@@ -153,10 +153,10 @@ export const useDataSources = () => {
       return [];
     }
     
-    console.log('🔥 Converting Firebase data to unified format:', firebaseData);
+    console.log('🔥 Converting Firebase data to unified format. Raw data:', firebaseData);
     
     const converted = firebaseData.map((doc, index) => {
-      console.log('🔥 Processing Firebase document:', doc);
+      console.log('🔥 Processing Firebase document raw:', doc);
       
       // Handle timestamp - provide fallback if missing
       let timestamp = new Date();
