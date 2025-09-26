@@ -10,7 +10,7 @@ interface UseOptimizedChatServiceReturn {
   loading: boolean;
   error: string | null;
   usageStats: { reads: number; writes: number; lastReset: number };
-  sendMessage: (conversationId: string, content: string) => Promise<void>;
+  sendMessage: (conversation: Conversation, content: string) => Promise<void>;
   markAsRead: (messageId: string) => Promise<void>;
   setTyping: (conversationId: string, isTyping: boolean) => Promise<void>;
   assignConversation: (conversationId: string, operatorId: string) => Promise<void>;
@@ -203,15 +203,23 @@ export const useOptimizedChatService = (activeConversationId?: string): UseOptim
     };
   }, []);
 
-  const sendMessage = useCallback(async (conversationId: string, content: string) => {
-    if (!currentUser || !content.trim()) return;
+  const sendMessage = useCallback(async (conversation: Conversation, content: string) => {
+    if (!currentUser || !content.trim() || !conversation) return;
+
+    if (!conversation.customerPhone) {
+      const errorMessage = 'Customer phone number not found for this conversation.';
+      setError(errorMessage);
+      console.error(errorMessage);
+      return;
+    }
 
     try {
       await OptimizedChatService.sendMessage(
-        conversationId,
+        conversation.id,
         currentUser.uid,
         'operator',
-        content.trim()
+        content.trim(),
+        conversation.customerPhone
       );
       
       // Update usage stats

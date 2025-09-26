@@ -19,6 +19,7 @@ import {
   startAfter,
   DocumentSnapshot
 } from 'firebase/firestore';
+import { getFunctions, httpsCallable } from 'firebase/functions';
 import { db } from '@/lib/firebase';
 import { 
   ChatMessage, 
@@ -415,6 +416,7 @@ export class OptimizedChatService {
     senderId: string,
     senderType: 'operator' | 'customer',
     content: string,
+    to: string, // Add 'to' parameter for the recipient's phone number
     messageType: 'text' | 'image' | 'file' | 'voice' = 'text'
   ): Promise<ChatMessage> {
     const messageRef = doc(collection(db, MESSAGES_COLLECTION));
@@ -450,6 +452,19 @@ export class OptimizedChatService {
 
     // Clear relevant caches
     this.cache.delete(`messages_${conversationId}_${DEFAULT_MESSAGE_LIMIT}`);
+
+    // Call the sendWhatsAppMessage Cloud Function for operator messages
+    if (senderType === 'operator') {
+      try {
+        const functions = getFunctions();
+        const sendWhatsAppMessage = httpsCallable(functions, 'sendWhatsAppMessage');
+        await sendWhatsAppMessage({ to, message: content });
+        console.log('✅ WhatsApp message triggered successfully via Cloud Function.');
+      } catch (error) {
+        console.error('❌ Error sending WhatsApp message via Cloud Function:', error);
+        // Here you could add logic to update the message status in Firestore to 'failed'
+      }
+    }
     
     return { id: messageRef.id, ...message };
   }

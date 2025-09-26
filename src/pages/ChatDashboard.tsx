@@ -43,7 +43,7 @@ const ChatDashboard: React.FC = () => {
 
   const handleSendMessage = async (content: string) => {
     if (!activeConversation) return;
-    await sendMessage(activeConversation.id, content);
+    await sendMessage(activeConversation, content);
   };
 
   const handleMarkAsRead = async (messageId: string) => {
